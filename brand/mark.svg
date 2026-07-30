@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ChronoMCP mark">
+  <!-- The loop that never closes: approval portal + LIFO compensation.
+       The opening is deliberate — not everything comes back. The red dot is the irreversible. -->
+  <path d="M 51.05 43 A 22 22 0 1 1 37.69 10.75"
+        fill="none" stroke="#e0a04a" stroke-width="7" stroke-linecap="round"/>
+  <polygon points="45.9,12.95 39.04,5.73 36.34,15.77" fill="#e0a04a"/>
+  <circle cx="52.3" cy="23.6" r="2.6" fill="#d97a63"/>
+</svg>

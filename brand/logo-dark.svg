@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 64" role="img" aria-label="ChronoMCP">
+  <!-- Horizontal logotype · dark background -->
+  <path d="M 51.05 43 A 22 22 0 1 1 37.69 10.75"
+        fill="none" stroke="#e0a04a" stroke-width="7" stroke-linecap="round"/>
+  <polygon points="45.9,12.95 39.04,5.73 36.34,15.77" fill="#e0a04a"/>
+  <circle cx="52.3" cy="23.6" r="2.6" fill="#d97a63"/>
+  <text x="74" y="43" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace"
+        font-size="30" font-weight="700" letter-spacing="-0.5">
+    <tspan fill="#d8dee9">chrono</tspan><tspan fill="#e0a04a">mcp</tspan>
+  </text>
+</svg>

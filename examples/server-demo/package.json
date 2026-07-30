@@ -1,0 +1,9 @@
+{
+  "name": "chronomcp-demo-server",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Example stdio MCP server with full mcp-compensate support (create/delete pair + irreversible tools). Zero dependencies.",
+  "type": "module",
+  "bin": { "chronomcp-demo-server": "./server.mjs" },
+  "engines": { "node": ">=18" }
+}

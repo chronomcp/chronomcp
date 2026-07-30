@@ -1,0 +1,21 @@
+{
+  "name": "chronomcp",
+  "version": "0.1.0",
+  "description": "Transactional guard proxy for MCP agents: impact diff, human approval gate, saga compensation, hash-chained audit log.",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "chronomcp": "./dist/cli.js" },
+  "files": ["dist"],
+  "engines": { "node": ">=18" },
+  "author": "Gerson Tolentino",
+  "repository": { "type": "git", "url": "git+https://github.com/chronomcp/chronomcp.git", "directory": "packages/proxy" },
+  "homepage": "https://github.com/chronomcp/chronomcp#readme",
+  "bugs": { "url": "https://github.com/chronomcp/chronomcp/issues" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "prepublishOnly": "npm run build && node --test test/*.test.mjs"
+  },
+  "keywords": ["mcp", "model-context-protocol", "agents", "saga", "human-in-the-loop", "rollback", "guardrails"]
+}

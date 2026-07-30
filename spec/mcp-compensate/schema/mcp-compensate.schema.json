@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chronomcp.dev/schemas/v1/mcp-compensate.schema.json",
+  "title": "mcp-compensate extension metadata (dev.chronomcp/compensate)",
+  "type": "object",
+  "required": ["reversibility"],
+  "additionalProperties": false,
+  "properties": {
+    "reversibility": {
+      "type": "string",
+      "enum": ["readonly", "compensable", "irreversible"]
+    },
+    "compensation": {
+      "type": "object",
+      "required": ["toolName", "parameterMapping"],
+      "additionalProperties": false,
+      "properties": {
+        "toolName": { "type": "string", "minLength": 1 },
+        "parameterMapping": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^\\$\\.(input|output)(\\.[A-Za-z_][A-Za-z0-9_]*)+$"
+          }
+        },
+        "timeoutMs": { "type": "integer", "minimum": 1, "default": 5000 },
+        "maxRetries": { "type": "integer", "minimum": 0, "default": 3 }
+      }
+    },
+    "sideEffectScope": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "reversibility": { "const": "compensable" } } },
+      "then": { "required": ["reversibility", "compensation"] }
+    }
+  ]
+}
