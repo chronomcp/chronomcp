@@ -17,5 +17,5 @@
     "test": "npm run build && node --test test/*.test.mjs",
     "prepublishOnly": "npm run build && node --test test/*.test.mjs"
   },
-  "keywords": ["mcp", "model-context-protocol", "agents", "saga", "human-in-the-loop", "rollback", "guardrails"]
+  "keywords": ["mcp", "model-context-protocol", "mcp-server", "mcp-proxy", "agents", "ai-agents", "ai-safety", "agent-safety", "saga", "human-in-the-loop", "human-approval", "rollback", "compensation", "mcp-compensate", "guardrails", "audit-log", "prompt-injection"]
 }
