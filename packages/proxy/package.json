@@ -1,6 +1,6 @@
 {
   "name": "chronomcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Transactional guard proxy for MCP agents: impact diff, human approval gate, saga compensation, hash-chained audit log.",
   "license": "MIT",
   "type": "module",
