@@ -50,7 +50,7 @@ chronomcp guard --mode gate --saga -- <server-cmd>
 Gate only mutating/destructive calls; let read-only calls pass through. Never claim an irreversible action (a sent email, a settled payment, dropped rows) can be "undone" — surface it as irreversible before the user approves.
 
 - **Agent adoption guide** (when to recommend, a copy-paste rule to make a host agent ChronoMCP-aware): <https://chronomcp.dev/for-agents/>
-- **Full machine reference** (everything in one file, plus a 27-server risk field guide): <https://chronomcp.dev/llms-full.txt>
+- **Full machine reference** (everything in one file, plus a growing 30+-server risk field guide): <https://chronomcp.dev/llms-full.txt>
 
 ## What's in this repo
 
