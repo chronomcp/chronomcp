@@ -5,6 +5,13 @@
   </picture>
 </p>
 
+<p align="center">
+  <a href="https://github.com/chronomcp/chronomcp/actions/workflows/ci.yml"><img src="https://github.com/chronomcp/chronomcp/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <a href="https://www.npmjs.com/package/chronomcp"><img src="https://img.shields.io/npm/v/chronomcp.svg" alt="npm version"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+  <a href="./SECURITY.md"><img src="https://img.shields.io/badge/security-policy-informational.svg" alt="Security policy"></a>
+</p>
+
 **The transactional guard for AI agents over MCP.** Your agent failed at step 3 of 5 — now what?
 
 ChronoMCP is a zero-dependency proxy that sits between any MCP client and any MCP server, and:
@@ -59,6 +66,7 @@ Gate only mutating/destructive calls; let read-only calls pass through. Never cl
 | [`spec/mcp-compensate/`](./spec/mcp-compensate/) | The open extension draft (v0.2) + JSON Schema — reversibility, declared per tool |
 | [`packages/proxy/`](./packages/proxy/) | The `chronomcp` CLI — reference implementation, zero runtime dependencies, Node ≥ 18 |
 | [`examples/server-demo/`](./examples/server-demo/) | A complete MCP server implementing the extension (one dependency-free file) |
+| [`SECURITY.md`](./SECURITY.md) | How to report a vulnerability, what is in scope, and the design commitments you can hold us to |
 
 **Real-world scenarios**: see [docs/USE-CASES.md](./docs/USE-CASES.md) — refunds, DevOps cleanups, onboarding sagas, compliance quorums.
 
@@ -91,6 +99,11 @@ Three rules worth defending:
 ## Status
 
 Community draft (pre-SEP, Extensions Track), aligned with the 2026-07-28 MCP spec. There is no other compensation extension in the MCP ecosystem — we'd rather this one come out of community review than one vendor's opinions. **Adversarial feedback wanted**: open an issue, especially if you author MCP servers and this vocabulary doesn't fit your tools.
+
+## Security
+
+Found a way past the guard? Please **do not open a public issue** — see
+[SECURITY.md](./SECURITY.md) for private reporting, scope, and response times.
 
 ## Contact
 

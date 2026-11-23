@@ -1,0 +1,6 @@
+node_modules/
+graphify-out/
+dist/
+pnpm-lock.yaml
+**/brand/
+**/docs/assets/

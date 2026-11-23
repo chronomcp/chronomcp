@@ -5,3 +5,10 @@ dist/
 *.jsonl
 .env
 .env.*
+
+# Saída gerada do graphify (grafo de conhecimento): reconstruível, ~8 MB.
+# O .graphifyignore É versionado; o graphify-out/ não.
+graphify-out/
+
+# Estado local do plugin oh-my-claudecode (por máquina, não é do projeto).
+.omc/
