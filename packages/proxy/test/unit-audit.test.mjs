@@ -65,3 +65,31 @@ test("a corrupted tail does not crash the process and is flagged", () => {
   const entry = JSON.parse(lines[1]);
   assert.equal(entry.prevHash, "CORRUPTED_TAIL");
 });
+
+test("the hash preimage is a pinned wire format, not an implementation detail", async () => {
+  // A third party verifying the chain in Python or Go has only the bytes on the
+  // line. This test pins those bytes so a refactor cannot silently change the
+  // preimage: key order, the exclusion of `hash`, and the fact that `prevHash`
+  // lives INSIDE the hashed object (it is not concatenated separately).
+  const { createHash } = await import("node:crypto");
+  const path = freshPath();
+  const log = new AuditLog(path);
+  log.write("tool_call_proposed", { tool: "a/b", note: "café" });
+
+  const [entry] = readEntries(path);
+
+  // 1. Key order on the wire, with `hash` appended last.
+  assert.deepEqual(Object.keys(entry), ["ts", "event", "data", "prevHash", "hash"]);
+
+  // 2. The preimage is the same line with `hash` removed, nothing else.
+  const preimage =
+    `{"ts":${JSON.stringify(entry.ts)},"event":"tool_call_proposed",` +
+    `"data":{"tool":"a/b","note":"café"},"prevHash":"GENESIS"}`;
+  assert.equal(createHash("sha256").update(preimage).digest("hex"), entry.hash);
+
+  // 3. No canonicalisation: `/` stays unescaped and non-ASCII stays raw UTF-8.
+  //    An external implementation that escapes either one computes a different
+  //    hash, so these are part of the contract.
+  assert.ok(preimage.includes('"tool":"a/b"'));
+  assert.ok(preimage.includes("café"));
+});

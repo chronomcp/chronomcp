@@ -8,9 +8,28 @@ function sha256(body: string): string {
 }
 
 /**
- * Append-only JSONL audit log with a hash chain:
- * hash_n = sha256(prevHash + canonicalJson(entry_without_hash)).
- * Tampering with any line breaks the chain from that point on.
+ * Append-only JSONL audit log with a hash chain. Tampering with any line breaks
+ * the chain from that line on.
+ *
+ * The hash of entry n is:
+ *
+ *   hash_n = sha256(utf8(serialize({ ts, event, data, prevHash })))
+ *
+ * where `prevHash` is hash_{n-1} ("GENESIS" for the first entry) and is a FIELD
+ * INSIDE the hashed object — it is not concatenated separately. The `hash` field
+ * itself is excluded from its own preimage and appended last, so the line on disk
+ * is `{ ts, event, data, prevHash, hash }`.
+ *
+ * `serialize` is `JSON.stringify` with the key order above. There is NO
+ * canonicalisation step: the preimage depends on JavaScript's key ordering and
+ * string escaping. A third party reproducing this in another language must
+ * preserve the key order exactly as it appears on the line and match
+ * `JSON.stringify`'s escaping. Verified behaviour: `/` is NOT escaped, non-ASCII
+ * is emitted raw as UTF-8 (`café`, not `café`), C0 control characters use
+ * the short `\n`/`\t` forms where they exist and `\u00XX` otherwise, lone
+ * surrogates are escaped as `\udXXX`, and there is no whitespace anywhere.
+ * `verifyChain` below re-derives the preimage by dropping `hash` from the parsed
+ * object, which keeps the original key order.
  */
 export class AuditLog {
   private prevHash = "GENESIS";
