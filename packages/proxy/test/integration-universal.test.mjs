@@ -1,7 +1,7 @@
 // Universality: the guard against REAL third-party MCP servers, with no prior
 // knowledge of them. Proves that interception, classification and passthrough
 // work with any server in the ecosystem.
-// Servers without an API key: memory, everything, sequential-thinking.
+// Servers without an API key: memory, everything.
 // npx unavailable/offline → tests are skipped (as in filesystem).
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -9,6 +9,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { TestClient } from "./helpers.mjs";
+import { classify } from "../dist/classify.js";
 
 const NPX_TIMEOUT = 90000;
 
@@ -116,35 +117,39 @@ test("universal/everything: tools, prompts and resources pass through intact", {
   }
 });
 
-// ---------------------------------------------------------------- sequential-thinking
+// ---------------------------------------------------------------- explicit annotation
 
-test("universal/sequential-thinking: an explicit readOnlyHint beats the conservative fallback", { timeout: NPX_TIMEOUT * 2 }, async (t) => {
-  // "sequentialthinking" has no recognized verb in its name — the conservative
-  // fallback would treat it as mutating. BUT the server declares
-  // annotations.readOnlyHint=true, and explicit metadata beats the heuristic:
-  // it classifies as read and flows without friction even in gate mode. This is
-  // exactly the intended incentive: servers that declare do not pay the cost of
-  // the unknown (the pure fallback is covered in unit-classify).
+test("universal/annotations: an explicit readOnlyHint beats the conservative fallback", { timeout: NPX_TIMEOUT * 2 }, async (t) => {
+  // "trigger-long-running-operation" has no recognized verb in its name — the
+  // conservative fallback would treat it as mutating (asserted below). BUT the
+  // server declares annotations.readOnlyHint=true, and explicit metadata beats
+  // the heuristic: it classifies as read and flows without friction even in gate
+  // mode. This is exactly the intended incentive: servers that declare do not
+  // pay the cost of the unknown (the pure fallback is covered in unit-classify).
+  //
+  // This used to run against @modelcontextprotocol/server-sequential-thinking,
+  // which no longer declares readOnlyHint=true (it now ships
+  // readOnlyHint:false), so it stopped exercising this rule.
+  const NAME = "trigger-long-running-operation";
+  assert.equal(classify(undefined, NAME), "mutating"); // the name alone buys nothing
+
   let c;
   try {
-    c = await connect("gate", "@modelcontextprotocol/server-sequential-thinking");
+    c = await connect("gate", "@modelcontextprotocol/server-everything");
   } catch (e) {
     if (e.skip) return t.skip(e.message);
     throw e;
   }
   try {
     const tools = await c.listTools({ timeoutMs: NPX_TIMEOUT });
-    const name = tools[0]?.name;
-    assert.ok(name);
+    const tool = tools.find((tl) => tl.name === NAME);
+    assert.ok(tool);
+    assert.equal(tool.annotations?.readOnlyHint, true);
 
-    const res = await c.callTool(
-      name,
-      { thought: "primeiro passo", nextThoughtNeeded: false, thoughtNumber: 1, totalThoughts: 1 },
-      { timeoutMs: NPX_TIMEOUT },
-    );
+    const res = await c.callTool(NAME, { duration: 1, steps: 1 }, { timeoutMs: NPX_TIMEOUT });
     assert.equal(res.result.isError, undefined);
 
-    const prop = c.auditEntries().find((e) => e.event === "tool_call_proposed" && e.data.tool === name);
+    const prop = c.auditEntries().find((e) => e.event === "tool_call_proposed" && e.data.tool === NAME);
     assert.ok(prop);
     assert.equal(prop.data.class, "read"); // explicit annotation, not the heuristic
   } finally {
