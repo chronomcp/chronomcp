@@ -28,8 +28,9 @@ export function renderImpact(opts: {
   args: Record<string, JsonValue> | undefined;
   cls: ActionClass;
   tool?: ToolInfo;
+  untrusted?: boolean;
 }): string {
-  const { serverLabel, environment, toolName, args, cls, tool } = opts;
+  const { serverLabel, environment, toolName, args, cls, tool, untrusted } = opts;
 
   const lines: string[] = [];
   lines.push("");
@@ -46,6 +47,12 @@ export function renderImpact(opts: {
     );
     lines.push(`├──────────────────────────────────────────────────────────`);
   }
+  if (untrusted) {
+    // The human must know the guard is NOT believing this server before reading
+    // anything the server supplied below (description, reversibility claim).
+    lines.push(`│ ⚠  UNTRUSTED SERVER — every call gated, server claims unverified`);
+    lines.push(`├──────────────────────────────────────────────────────────`);
+  }
   lines.push(`│ [${ICON[cls]}] ${serverLabel} → ${toolName}`);
   if (tool?.description) lines.push(`│ ${tool.description}`);
   lines.push(`│ arguments:`);
@@ -54,7 +61,14 @@ export function renderImpact(opts: {
   const c = tool?.compensate;
   if (cls !== "read") {
     if (c?.reversibility === "compensable" && c.compensation) {
-      lines.push(`│ reversible: YES → undo via ${c.compensation.toolName}`);
+      // INVIOLABLE RULE #3: never present as reversible what we cannot vouch for.
+      // The compensation is the server's own claim; from an untrusted server it is
+      // reported as a CLAIM, never as a fact the human can lean on.
+      lines.push(
+        untrusted
+          ? `│ reversible: CLAIMED by the server → undo via ${c.compensation.toolName} (UNVERIFIED)`
+          : `│ reversible: YES → undo via ${c.compensation.toolName}`,
+      );
       if (c.notes) lines.push(`│ note: ${c.notes}`);
     } else if (c?.reversibility === "irreversible") {
       lines.push(`│ reversible: NO — IRREVERSIBLE effect declared by the server`);

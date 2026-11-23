@@ -40,6 +40,40 @@ There are no long-term support branches.
 This repository holds the MIT core: the `mcp-compensate` specification draft,
 the `chronomcp` guard proxy CLI, and the example server.
 
+### Threat model — what the guard trusts, and when it should not
+
+Read this before deciding whether something is a bug. By **default** ChronoMCP
+classifies an action using, in order: the `mcp-compensate` metadata the server
+declares, the native MCP annotations the server declares, and the tool name the
+server chose. All three are supplied by **the very server being guarded**.
+
+That is deliberate (ADR #2: an explicit source beats a heuristic) and it is the
+right incentive for a *careless* server — declaring buys it a faster path. It is
+**not** a defense against a *hostile* server, which can simply declare
+`readOnlyHint: true`, or name a shell wrapper `ping_host` so it lands in the
+read allowlist. Neither requires lying about anything verifiable.
+
+If you do not trust the server you are wrapping, run it with
+`--untrusted-server`. Then only **escalation** is honored: nothing the server
+says can lower an action's class, the floor becomes `mutating` so every call is
+gated, and a declared undo is shown to the human as an `UNVERIFIED` claim
+instead of as fact. A report that a hostile server bypasses the gate **with**
+that flag on is in scope and serious. Without it, the default trust is the
+documented behavior above — though we still want to hear about a read verb in
+the allowlist that commonly wraps execution.
+
+Two limits are structural, not bugs:
+
+- **Reads are not gated.** The threat model is unapproved mutation and
+  destruction, not confidentiality. A tool that only reads will exfiltrate a
+  secret and the guard will record the exact path without stopping it. Use
+  `--untrusted-server` to gate reads too.
+- **Attacks in tool *descriptions* are invisible.** Tool poisoning and prompt
+  injection planted in a description act on the LLM before anything becomes a
+  `tools/call`, and inviolable rule #8 requires passing `tools/list` through
+  untouched. A scanner that inspects what a server *says* complements this
+  guard, which gates what a server *does*.
+
 ### In scope — these are the failures that matter most
 
 - **Guard bypass.** Any way to make a mutating or destructive call reach the

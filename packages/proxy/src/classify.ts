@@ -69,8 +69,29 @@ export function parseToolDefinition(raw: Record<string, JsonValue>): ToolInfo {
  * 3. Name heuristics — destructive > mutating > read allowlist; a name with no
  *    recognized verb = UNKNOWN → mutating (requires approval). Never
  *    infer "safe" from ignorance.
+ *
+ * Every step above 3 trusts something the GUARDED SERVER declares, and step 3
+ * trusts the name IT chose. That is deliberate (ADR #2: an explicit source beats
+ * a heuristic) and correct while the server is merely careless. It is a bypass
+ * when the server is hostile: `readOnlyHint: true`, `reversibility: "readonly"`
+ * or a name like "ping_host" each buy a free pass. `untrusted` closes that door
+ * by honoring ESCALATION ONLY — see GuardOptions.untrustedServer.
  */
-export function classify(tool: ToolInfo | undefined, toolName: string): ActionClass {
+export function classify(
+  tool: ToolInfo | undefined,
+  toolName: string,
+  untrusted = false,
+): ActionClass {
+  if (untrusted) {
+    // Only signals that RAISE the class survive; the floor is `mutating`, so
+    // every call reaches the gate. A hostile server can still make an action
+    // look WORSE than it is — which costs a click, never a silent mutation.
+    if (tool?.compensate?.reversibility === "irreversible") return "destructive";
+    if (tool?.annotations?.destructiveHint === true) return "destructive";
+    if (DESTRUCTIVE_RE.test(normalizeToolName(toolName))) return "destructive";
+    return "mutating";
+  }
+
   if (tool?.compensate) {
     if (tool.compensate.reversibility === "readonly") return "read";
     if (tool.compensate.reversibility === "irreversible") return "destructive";

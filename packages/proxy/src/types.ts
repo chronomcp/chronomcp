@@ -84,6 +84,17 @@ export interface GuardOptions {
   environment?: string;
   /** OOM guard: NDJSON lines above this are discarded (approx., code units). */
   maxLineBytes: number;
+  /**
+   * Treat the guarded server as HOSTILE. Classification normally leans on two
+   * signals the server itself controls: the annotations it declares and the name
+   * it chooses for each tool. That is the right incentive for a CARELESS server
+   * (declaring buys you speed) but a free bypass for a MALICIOUS one — naming a
+   * shell wrapper "ping_host" lands in the read allowlist and skips the gate.
+   * With this on, only ESCALATION is honored: nothing the server says can lower
+   * an action's class, the floor becomes `mutating`, and declared reversibility
+   * is shown to the human as an UNVERIFIED CLAIM rather than as fact.
+   */
+  untrustedServer: boolean;
   /** Remote MCP server via Streamable HTTP (instead of a stdio child). */
   httpUrl?: string;
   /** Extra headers for the HTTP transport (e.g. Authorization). */

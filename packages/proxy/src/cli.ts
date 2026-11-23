@@ -24,6 +24,11 @@ Usage:
 Options:
   --mode <log|gate|block>   log: audit only | gate: ask for human approval | block: deny destructive (default: gate)
   --saga                    enable the compensation stack (LIFO rollback via mcp-compensate)
+  --untrusted-server        treat the server as HOSTILE: ignore every claim of its own that would
+                            LOWER an action's class (readOnlyHint, reversibility "readonly", a
+                            read-looking tool name). Floor becomes 'mutating', so EVERY call is
+                            gated, and declared reversibility is shown as an UNVERIFIED claim.
+                            Use when wrapping a server you did not write or do not trust.
   --on-no-tty <allow|deny>  policy when there is no terminal to approve in gate mode (default: deny)
   --label <name>            server label in logs (default: command or url)
   --env <name>              environment touched: production|staging|homolog|dev (or env CHRONOMCP_ENV).
@@ -41,6 +46,7 @@ Options:
 Examples:
   chronomcp guard --mode gate --saga -- npx -y @modelcontextprotocol/server-filesystem /tmp
   chronomcp guard --mode gate --http https://mcp.example.com/mcp --header "Authorization: Bearer TOKEN"
+  chronomcp guard --mode gate --untrusted-server -- npx -y some-third-party-mcp-server
 `;
 
 function fail(msg: string): never {
@@ -107,6 +113,7 @@ function parseArgs(argv: string[]): { opts: GuardOptions; cmd: string[] } {
     auditPath: join(homedir(), ".chronomcp", "audit.jsonl"),
     serverLabel: "",
     maxLineBytes: 16 * 1024 * 1024,
+    untrustedServer: false,
     httpHeaders: {},
     environment: process.env.CHRONOMCP_ENV || undefined,
   };
@@ -125,6 +132,9 @@ function parseArgs(argv: string[]): { opts: GuardOptions; cmd: string[] } {
         opts.mode = v as PolicyMode;
         break;
       }
+      case "--untrusted-server":
+        opts.untrustedServer = true;
+        break;
       case "--saga":
         opts.saga = true;
         break;

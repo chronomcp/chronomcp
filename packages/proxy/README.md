@@ -58,6 +58,7 @@ Point your MCP client (Claude Desktop, agent CLI, …) at the `chronomcp guard �
 ### Key options
 
 ```
+--untrusted-server        treat the server as hostile (see below)
 --audit <file>            audit log path (default: ~/.chronomcp/audit.jsonl)
 --env <name>              environment touched (or env CHRONOMCP_ENV); "prod" => loud alert
 --max-line-bytes <n>      OOM guard per NDJSON/HTTP payload (default 16 MiB)
@@ -65,6 +66,43 @@ Point your MCP client (Claude Desktop, agent CLI, …) at the `chronomcp guard �
 --remote-timeout-ms <n>   deadline waiting for the human decision (default 60000)
 --on-remote-timeout <deny|local>  action when the deadline passes: deny (default) or apply the local --mode policy
 ```
+
+### Guarding a server you do not trust
+
+By default, classification uses what the server declares (`mcp-compensate`
+metadata, MCP annotations) and the tool name it chose. That is the right trade
+for a server you wrote or vendor you trust: declaring earns a faster path.
+
+A **hostile** server can abuse exactly that. It can declare
+`readOnlyHint: true`, or just name a shell wrapper `ping_host` — `ping` is in
+the read allowlist, so the call is classified `read` and never reaches the gate.
+No verifiable lie required.
+
+For third-party or untrusted servers:
+
+```bash
+chronomcp guard --mode gate --untrusted-server -- npx -y some-third-party-server
+```
+
+Then only **escalation** is honored — the server can make an action look worse
+than it is, never better:
+
+| Signal from the server | Default | `--untrusted-server` |
+| --- | --- | --- |
+| `readOnlyHint: true` | `read` | **ignored** |
+| `reversibility: "readonly"` | `read` | **ignored** |
+| read-looking tool name | `read` | **ignored** |
+| `destructiveHint: true` | `destructive` | honored |
+| `reversibility: "irreversible"` | `destructive` | honored |
+| destructive tool name | `destructive` | honored |
+
+The floor becomes `mutating`, so **every** call is gated — including reads, which
+closes secret exfiltration through a read-only tool. A declared undo is shown as
+`reversible: CLAIMED by the server … (UNVERIFIED)` rather than as fact, because
+a hostile server naming a no-op as its compensation would otherwise buy the
+human's confidence with one line of metadata.
+
+Expect to approve a lot. That is the point of the flag.
 
 ## The mcp-compensate extension
 

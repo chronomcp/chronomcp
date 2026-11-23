@@ -280,7 +280,7 @@ export class GuardProxy {
         : {};
 
     const tool = this.tools.get(toolName);
-    const cls = classify(tool, toolName);
+    const cls = classify(tool, toolName, this.opts.untrustedServer);
 
     this.audit.write("tool_call_proposed", {
       tool: toolName,
@@ -295,6 +295,7 @@ export class GuardProxy {
       args,
       cls,
       tool,
+      untrusted: this.opts.untrustedServer,
     });
 
     // --remote mode: human decision via the control plane (asynchronous).
